@@ -48,8 +48,8 @@ jobs:
         action: 'deploy'
         connectionType: 'azureResourceManager'
         azureSubscriptionConnection: 'Azure subscription 1(20f9f87d-4d07-496c-b39f-cf473b4b25f3)'
-        azureResourceGroup: 'rg-api-latest'
-        kubernetesCluster: 'API-Cluster-latest'
+        azureResourceGroup: 'rg-api'
+        kubernetesCluster: 'API-Cluster'
         useClusterAdmin: true
         namespace: 'default'
         manifests: |
