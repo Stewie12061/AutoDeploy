@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-$(deploymentName)
+  labels:
+    app: webservice-$(deploymentName)
+spec:
+  replicas: 2
+  template:
+    metadata:
+      name: webservice-$(deploymentName)
+      labels:
+        app: webservice-$(deploymentName)
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": windows
+      containers:
+        - name: webservice-$(deploymentName)
+          image: stewie12061/webservice:latest
+          volumeMounts:
+              - name: config-volume
+                mountPath: C:\inetpub\wwwroot\web.config
+                subPath: connectionStrings.config
+              - mountPath: C:\inetpub\wwwroot\Attached\
+                name: web-volume-$(deploymentName)
+              - mountPath: C:\inetpub\wwwroot\Logs\
+                name: web-log-$(deploymentName)
+          resources:
+            requests:
+              cpu: 300m
+              memory: 1Gi
+            limits:
+              cpu: 600m
+              memory: 2Gi
+          ports:
+            - containerPort: 80
+      volumes:
+        - name: config-volume
+          configMap:
+            name: web-config-$(deploymentName)
+        - name: web-volume-$(deploymentName)
+          persistentVolumeClaim:
+            claimName: web-volume-claim-$(deploymentName)
+        - name: web-log-$(deploymentName)
+          persistentVolumeClaim:
+            claimName: web-volume-claim-log-$(deploymentName)
+  selector:
+    matchLabels:
+      app: webservice-$(deploymentName)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-clusterip-srv-$(deploymentName)
+spec:
+  type: ClusterIP
+  selector:
+    app: webservice-$(deploymentName)
+  ports:
+  - name: webservice-$(deploymentName)
+    protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-loadbalance-srv-$(deploymentName)
+spec:
+  type: LoadBalancer
+  selector:
+    app: webservice-$(deploymentName)
+  ports:
+  - name: webservice-$(deploymentName)
+    protocol: TCP
+    port: 80

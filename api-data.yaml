@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: api-volume-claim-log-$(deploymentName)
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azure-disk-api
+  resources:
+    requests:
+      storage: 5Gi
