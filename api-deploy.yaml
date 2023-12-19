@@ -27,10 +27,10 @@ spec:
         resources:
           requests:
             cpu: "300m"
-            memory: "1Gi"
+            memory: "1000Mi"
           limits:
             cpu: "600m"
-            memory: "2Gi"
+            memory: "2000Mi"
         volumeMounts:
         - name: google-credentials
           mountPath: /var/secrets/google
