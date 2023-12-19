@@ -28,10 +28,10 @@ spec:
           resources:
             requests:
               cpu: "300m"
-              memory: "1024M"
+              memory: "1Gi"
             limits:
               cpu: "600m"
-              memory: "2048M"
+              memory: "2Gi"
           ports:
             - containerPort: 80
       volumes:
