@@ -26,11 +26,11 @@ spec:
         image: stewie12061/apiserevice:latest
         resources:
           requests:
-            cpu: 250m
-            memory: 500m
+            cpu: "300m"
+            memory: "1024M"
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: "600m"
+            memory: "2048M"
         volumeMounts:
         - name: google-credentials
           mountPath: /var/secrets/google

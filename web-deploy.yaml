@@ -27,11 +27,11 @@ spec:
                 name: web-log-$(deploymentName)
           resources:
             requests:
-              cpu: 300m
-              memory: 1Gi
+              cpu: "300m"
+              memory: "1024M"
             limits:
-              cpu: 600m
-              memory: 2Gi
+              cpu: "600m"
+              memory: "2048M"
           ports:
             - containerPort: 80
       volumes:
