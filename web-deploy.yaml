@@ -12,8 +12,15 @@ spec:
       labels:
         app: webservice-$(deploymentName)
     spec:
-      nodeSelector:
-        "beta.kubernetes.io/os": windows
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: "kubernetes.io/os"
+                  operator: In
+                  values:
+                    - "windows"
       containers:
         - name: webservice-$(deploymentName)
           image: stewie12061/webservice:latest
