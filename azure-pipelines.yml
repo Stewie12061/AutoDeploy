@@ -3,8 +3,7 @@ parameters:
     type: string
     default: test
     
-# trigger:
-# - main
+trigger: none
 
 resources:
   - repo: self
