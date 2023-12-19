@@ -93,7 +93,6 @@ jobs:
         manifests: |
           $(Pipeline.Workspace)/manifests/api-data.yaml
           $(Pipeline.Workspace)/manifests/api-deploy.yaml
-          $(Pipeline.Workspace)/manifests/job-ingress-add-host.yaml
       displayName: 'Deploy api'
     
     - task: KubernetesManifest@1
@@ -108,6 +107,6 @@ jobs:
           $(Pipeline.Workspace)/manifests/web-data.yaml
           $(Pipeline.Workspace)/manifests/web-config.yaml
           $(Pipeline.Workspace)/manifests/web-deploy.yaml
-          $(Pipeline.Workspace)/manifests/web-job-ingress-add-host.yaml
+          $(Pipeline.Workspace)/manifests/web-cronjob-delete-log.yaml
       displayName: 'Deploy web'
     
