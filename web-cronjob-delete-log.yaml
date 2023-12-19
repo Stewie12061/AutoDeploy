@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-cleanup-web-$(deploymentName)
+spec:
+  schedule: "0 5 * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: log-cleanup-container
+            image: mcr.microsoft.com/windows/servercore:ltsc2022
+            command:
+            - powershell.exe
+            - -command
+            - |
+              $files = Get-ChildItem C:\inetpub\wwwroot\Logs\
+              if ($files.Count -gt 5) { $files | Sort-Object LastWriteTime | Select-Object -First ($files.Count - 5) | Remove-Item -Force}
+            volumeMounts:
+            - name: log-volume-$(deploymentName)
+              mountPath: C:\inetpub\wwwroot\Logs\
+          volumes:
+          - name: log-volume-$(deploymentName)
+            persistentVolumeClaim:
+              claimName: web-volume-claim-log-$(deploymentName)
+          restartPolicy: OnFailure
