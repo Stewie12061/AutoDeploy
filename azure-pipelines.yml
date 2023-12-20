@@ -92,7 +92,7 @@ jobs:
         manifests: |
           $(Pipeline.Workspace)/manifests/api-data.yaml
           $(Pipeline.Workspace)/manifests/api-deploy.yaml
-          $(Pipeline.Workspace)/manifests/job-ingress-add-host.yaml
+          $(Pipeline.Workspace)/manifests/api-job-ingress-add-host.yaml
       displayName: 'Deploy api'
     
     - task: KubernetesManifest@1

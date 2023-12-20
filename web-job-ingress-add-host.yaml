@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: web-add-ingress-host-$(deploymentName)
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/os: windows
+      serviceAccountName: account-service
+      containers:
+      - name: add-host-container
+        image: mcr.microsoft.com/windows/servercore:ltsc2022
+        command:
+          - "powershell.exe"
+          - "-Command"
+          - |
+            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+            choco install jq -y
+            choco install kubernetes-cli -y
+            kubectl version
+            kubectl patch ingress web-ingress-route -n default --type=json -p "[{'op': 'add', 'path': '/spec/rules/-', 'value': {'host': '$(deploymentName)web.minhnhut.online', 'http': {'paths': [{'path': '/', 'pathType': 'Prefix', 'backend': {'service': {'name': 'web-clusterip-srv-$(deploymentName)', 'port': {'number': 80}}}}]}}}]"
+      restartPolicy: Never
+  backoffLimit: 4
