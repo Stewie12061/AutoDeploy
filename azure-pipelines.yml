@@ -89,21 +89,6 @@ jobs:
             exit 1  # Exit the script with a non-zero status code to mark it as failed
         }
       displayName: 'Check database status'
-
-    - task: KubernetesManifest@1
-      inputs:
-        action: 'deploy'
-        connectionType: 'azureResourceManager'
-        azureSubscriptionConnection: 'Azure subscription 1(20f9f87d-4d07-496c-b39f-cf473b4b25f3)'
-        azureResourceGroup: 'rg-api'
-        kubernetesCluster: 'API-Cluster'
-        useClusterAdmin: true
-        namespace: 'default'
-        manifests: |
-          $(Pipeline.Workspace)/manifests/api-data.yaml
-          $(Pipeline.Workspace)/manifests/api-deploy.yaml
-          $(Pipeline.Workspace)/manifests/api-job-ingress-add-host.yaml
-      displayName: 'Deploy api'
     
     - powershell: |
         # Set your GoDaddy API key and secret
@@ -122,17 +107,12 @@ jobs:
 
         # Construct the headers
         $headers = @{
-            Authorization = "sso-key $apiKey:$apiSecret"
-            Content-Type  = "application/json"
+            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+            'Content-Type'  = 'application/json'
         }
 
         # Construct the payload for the new DNS record
-        $payload = @{
-            type = $recordType
-            name = $recordName
-            data = $recordData
-            ttl  = $ttl
-        } | ConvertTo-Json
+        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
         # Make the API request to create the DNS record
         $response = Invoke-RestMethod -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
@@ -158,17 +138,12 @@ jobs:
 
         # Construct the headers
         $headers = @{
-            Authorization = "sso-key $apiKey:$apiSecret"
-            Content-Type  = "application/json"
+            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+            'Content-Type'  = 'application/json'
         }
 
         # Construct the payload for the new DNS record
-        $payload = @{
-            type = $recordType
-            name = $recordName
-            data = $recordData
-            ttl  = $ttl
-        } | ConvertTo-Json
+        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
         # Make the API request to create the DNS record
         $response = Invoke-RestMethod -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
@@ -176,6 +151,21 @@ jobs:
         # Display the response
         $response
       displayName: 'Add DNS Record For API'
+
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'azureResourceManager'
+        azureSubscriptionConnection: 'Azure subscription 1(20f9f87d-4d07-496c-b39f-cf473b4b25f3)'
+        azureResourceGroup: 'rg-api'
+        kubernetesCluster: 'API-Cluster'
+        useClusterAdmin: true
+        namespace: 'default'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/api-data.yaml
+          $(Pipeline.Workspace)/manifests/api-deploy.yaml
+          $(Pipeline.Workspace)/manifests/api-job-ingress-add-host.yaml
+      displayName: 'Deploy api'
     
     - task: KubernetesManifest@1
       inputs:
