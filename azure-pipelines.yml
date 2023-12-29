@@ -64,8 +64,12 @@ jobs:
         Write-Host "Server Name: $ServerName"
         Write-Host "Database Name: $DatabaseName"
 
-        # Infinite loop
-        while ($true) {
+        # Loop for a maximum of $maxAttempts times
+        $maxAttempts = 10
+        $attempts = 0
+        while ($attempts -lt $maxAttempts) {
+            $attempts++
+
             $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=pa55w0rd!;TrustServerCertificate=True;"
             $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
             $databaseState = $databaseStatus.state_desc
@@ -76,7 +80,13 @@ jobs:
                 Write-Host "Database is now ONLINE. Proceeding with deployment."
                 break
             }
-            Start-Sleep -Seconds 10  # Adjust the sleep interval as needed
+            Write-Host "Waiting for the database to be ONLINE. Attempt $attempts of $maxAttempts."
+            Start-Sleep -Seconds 10
+        }
+        # Check if the loop exited due to reaching the maximum number of attempts
+        if ($attempts -eq $maxAttempts) {
+            Write-Host "Database did not come ONLINE after $maxAttempts attempts. Canceling deployment."
+            exit 1  # Exit the script with a non-zero status code to mark it as failed
         }
       displayName: 'Check database status'
 
@@ -94,6 +104,78 @@ jobs:
           $(Pipeline.Workspace)/manifests/api-deploy.yaml
           $(Pipeline.Workspace)/manifests/api-job-ingress-add-host.yaml
       displayName: 'Deploy api'
+    
+    - powershell: |
+        # Set your GoDaddy API key and secret
+        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
+        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+
+        # Set the domain and record information
+        $domain = "minhnhut.online"
+        $recordType = "A"
+        $recordName = "${{ parameters.deploymentName }}web"
+        $recordData = "20.43.178.226"
+        $ttl = 600
+
+        # Construct the API endpoint URL
+        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+
+        # Construct the headers
+        $headers = @{
+            Authorization = "sso-key $apiKey:$apiSecret"
+            Content-Type  = "application/json"
+        }
+
+        # Construct the payload for the new DNS record
+        $payload = @{
+            type = $recordType
+            name = $recordName
+            data = $recordData
+            ttl  = $ttl
+        } | ConvertTo-Json
+
+        # Make the API request to create the DNS record
+        $response = Invoke-RestMethod -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
+
+        # Display the response
+        $response
+      displayName: 'Add DNS Record For Web'
+
+    - powershell: |
+        # Set your GoDaddy API key and secret
+        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
+        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+
+        # Set the domain and record information
+        $domain = "minhnhut.online"
+        $recordType = "A"
+        $recordName = "${{ parameters.deploymentName }}api"
+        $recordData = "20.92.68.166"
+        $ttl = 600
+
+        # Construct the API endpoint URL
+        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+
+        # Construct the headers
+        $headers = @{
+            Authorization = "sso-key $apiKey:$apiSecret"
+            Content-Type  = "application/json"
+        }
+
+        # Construct the payload for the new DNS record
+        $payload = @{
+            type = $recordType
+            name = $recordName
+            data = $recordData
+            ttl  = $ttl
+        } | ConvertTo-Json
+
+        # Make the API request to create the DNS record
+        $response = Invoke-RestMethod -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
+
+        # Display the response
+        $response
+      displayName: 'Add DNS Record For API'
     
     - task: KubernetesManifest@1
       inputs:
