@@ -115,7 +115,7 @@ jobs:
         $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
         # Make the API request to create the DNS record
-        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
+        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
 
         # Display the response
         $response
@@ -146,7 +146,7 @@ jobs:
         $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
         # Make the API request to create the DNS record
-        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Post -Headers $headers -Body $payload
+        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
 
         # Display the response
         $response
